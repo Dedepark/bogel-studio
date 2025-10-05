@@ -484,18 +484,35 @@
     </div>
 
     <script>
-// ==================== KODE JAVASCRIPT YANG SUDAH SIAP PAKAI ====================
+// ==================== KODE JAVASCRIPT LENGKAP UNTUK NETLIFY ====================
 
 // --- KONFIGURASI & GLOBAL VARIABLES ---
 const ADMIN_PASSWORD = 'z26a01d04';
 
-// KONFIGURASI SUPABASE (SUDAH DIISI DENGAN API-MU)
-const SUPABASE_URL = "https://vqvdkrmrfbmvtcvdwjhr.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxdmRrcm1yZmJtdnRjdmR3amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2MzIxMjcsImV4cCI6MjA3NTIwODEyN30.tFs_JsidS5H99PiBpIMYkI83aQXz6NTBYTlWL25ixcg";
+// FUNGSI UNTUK MENGAMBIL KONFIGURASI (API KEY) DARI NETLIFY
+// Fungsi ini akan mencoba mengambil API Key dari Environment Variable Netlify saat di-hosting.
+// Jika gagal (misal saat dijalankan di komputer lokal), akan menggunakan nilai hardcoded.
+async function getConfig() {
+    try {
+        // Di Netlify, environment variables bisa diakses via fetch ke endpoint khusus
+        const response = await fetch('/.netlify/env');
+        const env = await response.json();
+        return {
+            SUPABASE_URL: env.SUPABASE_URL,
+            SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY
+        };
+    } catch (error) {
+        console.error("Could not load Netlify env vars, falling back to hardcoded values for local development.");
+        // Nilai ini hanya untuk development lokal, tidak akan digunakan di Netlify jika env vars sudah diset
+        return {
+            SUPABASE_URL: "https://vqvdkrmrfbmvtcvdwjhr.supabase.co",
+            SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxdmRrcm1yZmJtdnRjdmR3amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2MzIxMjcsImV4cCI6MjA3NTIwODEyN30.tFs_JsidS5H99PiBpIMYkI83aQXz6NTBYTlWL25ixcg"
+        };
+    }
+}
 
-// Inisialisasi Supabase client
-const { createClient } = window.supabase;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase client akan diinisialisasi nanti setelah konfigurasi didapat
+let supabase;
 
 // Fungsi lain (history, favorites, notifications) tetap pakai localStorage
 const LS_HISTORY_KEY = 'bogelstudio_history';
@@ -589,7 +606,6 @@ async function deletePhoto(photoId) {
 }
 
 // --- SEMUA FUNGSI LAINNYA (TIDAK PERLU DIUBAH) ---
-// (Aku menyalin semua fungsi lainnya dari kode aslimu agar lengkap)
 function saveData(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error(`Gagal menyimpan data untuk kunci ${key}:`, e); showToast('Gagal menyimpan data lokal!', 'error'); } }
 function showToast(message, type = 'info') { const container = document.getElementById('toast-container'); if (!container) return; const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.textContent = message; container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 4000); }
 function customConfirm(title, message) { return new Promise((resolve) => { const overlay = document.getElementById('custom-confirm-overlay'); const titleEl = document.getElementById('confirm-title'); const messageEl = document.getElementById('confirm-message'); const btnYes = document.getElementById('confirm-yes'); const btnNo = document.getElementById('confirm-no'); if (!overlay || !titleEl || !messageEl || !btnYes || !btnNo) return resolve(false); titleEl.textContent = title; messageEl.textContent = message; overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10); const cleanup = (result) => { overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300); btnYes.onclick = null; btnNo.onclick = null; resolve(result); }; btnYes.onclick = () => cleanup(true); btnNo.onclick = () => cleanup(false); }); }
@@ -629,13 +645,28 @@ function changePage(pageId) { const pages = document.querySelectorAll('.page-con
 function toggleSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (sidebar && overlay) { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); } }
 function closeSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (sidebar && overlay) { sidebar.classList.remove('open'); overlay.classList.remove('active'); } }
 
-// --- INISIALISASI ---
-document.addEventListener('DOMContentLoaded', () => {
+// --- INISIALISASI UTAMA (DIMODIFIKASI) ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Ambil konfigurasi (API Key) terlebih dahulu
+    const config = await getConfig();
+    
+    // 2. Inisialisasi Supabase client dengan konfigurasi yang sudah didapat
+    const { createClient } = window.supabase;
+    supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+
+    // 3. Jalankan inisialisasi lainnya
     const uploadForm = document.getElementById('upload-form');
-    if (uploadForm) { uploadForm.addEventListener('submit', handleUpload); }
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', handleUpload);
+    }
+    
     updateAdminUI();
     updateNotifBadge();
+    
+    // 4. Muat data dari server
     loadPhotosFromServer();
+    
+    // 5. Tampilkan halaman awal
     changePage('home');
 });
 </script>
