@@ -354,7 +354,8 @@
                     <h2 class="text-3xl font-bold mb-6">Profil Saya</h2>
                     <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6">
                         <div class="flex items-center space-x-4">
-                            <img id="profile-avatar" src="https://via.placeholder.com/100" alt="Avatar" class="w-20 h-20 rounded-full object-cover">
+                            <!-- PERBAIKAN: Placeholder avatar yang lebih andal -->
+                            <img id="profile-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E" alt="Avatar" class="w-20 h-20 rounded-full object-cover">
                             <div>
                                 <h3 id="profile-username" class="text-xl font-semibold">Loading...</h3>
                                 <p id="profile-email" class="text-gray-400">Loading...</p>
@@ -415,7 +416,8 @@
             <!-- Top Overlay: User Info -->
             <div class="shorts-overlay-top">
                 <div class="flex items-center space-x-3">
-                    <img id="modal-uploader-avatar" src="https://via.placeholder.com/40" alt="Uploader" class="w-10 h-10 rounded-full">
+                    <!-- PERBAIKAN: Placeholder avatar yang lebih andal -->
+                    <img id="modal-uploader-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E" alt="Uploader" class="w-10 h-10 rounded-full">
                     <div>
                         <p id="modal-photo-uploader" class="text-white font-semibold"></p>
                         <p id="modal-photo-date" class="text-gray-300 text-sm"></p>
@@ -629,7 +631,8 @@ async function handleUpload(event) {
 async function toggleLike(photoId) {
     if (!user) return showToast('Anda harus login untuk menyukai foto!', 'error');
     
-    const { data: existingLike } = await supabase.from('likes').select('*').eq('photo_id', photoId).eq('user_id', user.id).single();
+    // PERBAIKAN: Gunakan .maybeSingle() untuk menghindari error 406
+    const { data: existingLike } = await supabase.from('likes').select('*').eq('photo_id', photoId).eq('user_id', user.id).maybeSingle();
     
     if (existingLike) {
         // Unlike
@@ -641,7 +644,7 @@ async function toggleLike(photoId) {
         await supabase.rpc('increment_likes', { row_id: photoId });
     }
     
-    // PERBAIKAN: Muat ulang data untuk memastikan UI sinkron
+    // Muat ulang data untuk memastikan UI sinkron
     await loadPhotosFromServer();
     const photo = photos.find(p => p.id === photoId);
     if(photo) updateLikeButton(photoId, photo);
@@ -663,7 +666,8 @@ async function loadPhotosFromServer() {
 function generatePhotoCard(photo) {
     const isFav = favorites.includes(photo.id);
     const likeCount = photo.likes_count || 0;
-    const uploader = photo.profiles || { username: 'Unknown', avatar_url: 'https://via.placeholder.com/40' };
+    // PERBAIKAN: Placeholder avatar yang lebih andal
+    const uploader = photo.profiles || { username: 'Unknown', avatar_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E" };
     
     return `
         <div class="photo-card">
@@ -775,7 +779,7 @@ function openPhotoModal(photoId) {
     document.getElementById('modal-photo-title').textContent = photo.title;
     document.getElementById('modal-photo-description').textContent = photo.description || 'Tidak ada deskripsi';
     
-    const uploader = photo.profiles || { username: 'Unknown', avatar_url: 'https://via.placeholder.com/40' };
+    const uploader = photo.profiles || { username: 'Unknown', avatar_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E" };
     document.getElementById('modal-uploader-avatar').src = uploader.avatar_url;
     document.getElementById('modal-photo-uploader').textContent = uploader.username;
     document.getElementById('modal-photo-date').textContent = new Date(photo.created_at).toLocaleDateString('id-ID');
