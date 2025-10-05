@@ -3,236 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galeri Foto Publik Bogel Studio (Responsif V5)</title>
+    <title>Bogel Studio - Galeri Foto Komunitas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
-        /* SCROLLBAR CUSTOM (Transparan dan Ramping) */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-        ::-webkit-scrollbar-track { background: transparent; }
+        /* MODIFIKASI BESAR: Gaya Baru yang Lebih Dinamis */
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --accent-color: #e94560;
+            --accent-hover: #ff4666;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a8a8b3;
+            --border-color: #2a2a4a;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117;
-            color: #e5e7eb;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow-x: hidden;
         }
+        
+        /* Scrollbar custom */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-hover); }
+
+        /* Header dengan efek glassmorphism */
         .header-fixed {
-            background-color: #0d1117;
-            border-bottom: 1px solid #24292e;
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
         }
+
+        /* Sidebar dengan gradient */
         .sidebar {
-            width: 250px;
-            transition: transform 0.3s ease-in-out;
-        }
-        .content {
-            flex-grow: 1;
-        }
-        /* Mobile: Sembunyikan sidebar secara default, geser konten */
-        @media (max-width: 767px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                transform: translateX(-250px);
-                z-index: 40;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .content {
-                margin-left: 0; /* Tidak ada margin di mobile saat sidebar tertutup */
-            }
-            .overlay {
-                display: none;
-            }
-            .overlay.active {
-                display: block;
-            }
-        }
-        /* Desktop: Tampilkan sidebar, konten menyesuaikan */
-        @media (min-width: 768px) {
-            .sidebar {
-                transform: translateX(0);
-            }
-            .content {
-                margin-left: 250px;
-            }
-            .header-fixed {
-                left: 250px;
-                width: calc(100% - 250px);
-            }
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-right: 1px solid var(--border-color);
         }
         
-        /* Gaya khusus untuk grid galeri yang adaptif */
-        #photo-grid, #favorite-grid {
-            display: grid;
-            gap: 16px; /* 4 units in Tailwind */
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif */
+        /* Tombol dengan gradient dan efek hover */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), #c23452);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
         }
-        
-        /* Gaya Kustom untuk Toast Notification */
-        #toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-width: 90%;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
         }
 
-        .toast {
-            background-color: #1f2937;
-            color: #f3f4f6;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            border-left: 4px solid #3b82f6; /* Warna default biru */
+        /* Card foto dengan efek hover yang lebih halus */
+        .photo-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
+        .photo-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-color);
         }
-        .toast.success { border-left-color: #10b981; }
-        .toast.error { border-left-color: #ef4444; }
-        .toast.info { border-left-color: #3b82f6; }
+        .photo-card img {
+            transition: transform 0.5s ease;
+        }
+        .photo-card:hover img {
+            transform: scale(1.1);
+        }
 
-        /* Gaya untuk Modal Konfirmasi Kustom */
-        #custom-confirm-overlay {
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            display: none;
-            transition: opacity 0.3s ease;
-            opacity: 0;
+        /* Modal dengan glassmorphism */
+        .modal-overlay {
+            background: rgba(10, 10, 25, 0.85);
+            backdrop-filter: blur(12px);
         }
-        #custom-confirm-overlay.show {
-            opacity: 1;
+        .modal-content {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border-color);
         }
         
-        /* Gaya Modal Foto (Responsif) */
-        #photo-modal-overlay {
-            display: none;
-            overflow-y: auto; /* Untuk memastikan bisa discroll di mobile jika kontennya panjang */
+        /* Gaya untuk form input */
+        .form-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
         }
-        #photo-modal-overlay.show-flex {
-            display: flex;
+        .form-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
         }
-        #photo-modal-content {
-            width: 100%;
-            height: 100%;
-            border-radius: 0; /* Full screen di mobile */
+
+        /* Ikon Like dan Save yang baru */
+        .icon-btn {
+            transition: all 0.2s ease;
         }
-        @media (min-width: 768px) {
-            #photo-modal-content {
-                max-width: 90%;
-                max-height: 90vh;
-                border-radius: 0.75rem; /* rounded-xl di desktop */
-            }
+        .icon-btn:hover {
+            transform: scale(1.2);
         }
-        .nav-button.active-nav-link {
-            background-color: #1f2937;
-            color: #fff;
+        .icon-btn.liked {
+            color: var(--accent-color);
         }
-        
-        /* Filter navigasi scroll horizontal */
-        .filter-container {
-            overflow-x: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-            -webkit-overflow-scrolling: touch;
-            white-space: nowrap;
-            padding-bottom: 4px;
+        .icon-btn.saved {
+            color: #fbbf24; /* Warna kuning untuk save/favorit */
         }
-        .filter-container::-webkit-scrollbar {
-            height: 6px;
-        }
-        .filter-container::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-        }
-        .filter-container::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        
+
+        /* Gaya lainnya (dari kode asli, disesuaikan) */
+        .content { flex-grow: 1; }
+        @media (max-width: 767px) { .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-250px); z-index: 40; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; } .overlay { display: none; } .overlay.active { display: block; } }
+        @media (min-width: 768px) { .sidebar { transform: translateX(0); } .content { margin-left: 250px; } .header-fixed { left: 250px; width: calc(100% - 250px); } }
+        #photo-grid, #favorite-grid, #profile-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        #toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 100; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { background-color: var(--bg-secondary); color: var(--text-primary); padding: 0.75rem 1rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); opacity: 0; transform: translateY(-20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; border-left: 4px solid var(--accent-color); }
+        .toast.show { opacity: 1; transform: translateY(0); } .toast.success { border-left-color: #10b981; } .toast.error { border-left-color: #ef4444; } .toast.info { border-left-color: #3b82f6; }
+        #custom-confirm-overlay { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); display: none; transition: opacity 0.3s ease; opacity: 0; }
+        #custom-confirm-overlay.show { opacity: 1; }
+        #photo-modal-overlay { display: none; overflow-y: auto; }
+        #photo-modal-overlay.show-flex { display: flex; }
+        #photo-modal-content { width: 100%; height: 100%; border-radius: 0; }
+        @media (min-width: 768px) { #photo-modal-content { max-width: 90%; max-height: 90vh; border-radius: 0.75rem; } }
+        .nav-button.active-nav-link { background-color: var(--accent-color); color: white; }
+        .filter-container { overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; -webkit-overflow-scrolling: touch; white-space: nowrap; padding-bottom: 4px; }
+        .filter-container::-webkit-scrollbar { height: 6px; } .filter-container::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 3px; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <!-- OVERLAY (Hanya untuk mobile, klik untuk menutup sidebar) -->
+    <!-- OVERLAY -->
     <div id="overlay" class="overlay fixed inset-0 bg-black opacity-50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
 
     <!-- SIDEBAR / NAVIGATION -->
-    <div id="sidebar" class="sidebar bg-[#161b22] fixed h-full z-40 p-4 border-r border-gray-700 flex flex-col justify-between">
+    <div id="sidebar" class="sidebar fixed h-full z-40 p-4 border-r border-gray-700 flex flex-col justify-between">
         <div>
-            <div class="text-2xl font-bold mb-8 text-indigo-400">Bogel Studio Galeri</div>
+            <div class="text-2xl font-bold mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Bogel Studio</div>
             
             <nav class="space-y-2">
                 <button onclick="changePage('home')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150 active-nav-link" data-page="home">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-grid mr-3 w-5 h-5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                     <span>Home</span>
                 </button>
-                <button onclick="changePage('history')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="history">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-3 w-5 h-5"><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15.7 6.4c.64.92 1 2.05 1 3.1c0 .35-.04.69-.1.97"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.7-6.4c-.64-.92-1-2.05-1-3.1c0-.35.04-.69.1-.97"/><path d="M12 7v5l3 3"/></svg>
-                    <span>Riwayat Tontonan</span>
-                </button>
                 <button onclick="changePage('favorites')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="favorites">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star mr-3 w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    <span>Favorit</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark mr-3 w-5 h-5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    <span>Favoritku</span>
                 </button>
-                <button onclick="changePage('notifications')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150 relative" data-page="notifications">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell mr-3 w-5 h-5"><path d="M18.6 3.1c.1.3 0 .7-.2.9L12 18 5.6 3.1c-.2-.2-.3-.6-.2-.9.1-.3.3-.6.6-.7h12c.2 0 .5.3.6.7Z"/><path d="M21 18s-2-2-7-2-7 2-7 2"/></svg>
-                    <span>Notifikasi</span>
-                    <span id="notif-badge" class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
-                </button>
-                <button onclick="changePage('developer')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="developer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code mr-3 w-5 h-5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                    <span>Pengembang</span>
-                </button>
+                
+                <!-- MODIFIKASI BESAR: Menu Auth & Profil -->
+                <div id="auth-menu" class="space-y-2 border-t border-gray-700 pt-4 mt-4">
+                    <!-- Menu ini akan diisi oleh JavaScript -->
+                </div>
             </nav>
-            
-            <nav id="admin-menu" class="space-y-2 mt-8 border-t border-gray-700 pt-4 hidden">
-                <p class="text-sm font-semibold text-red-400">Menu Admin</p>
-                <button onclick="changePage('upload')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="upload">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-upload mr-3 w-5 h-5"><path d="M4 14.8c-.8.8-1.2 2-.8 3.3.4 1.3 1.5 2.2 3.1 2.2H17c2.2 0 4-1.8 4-4 0-1.8-1.2-3.2-2.8-3.7-.4-.8-.9-1.5-1.5-2-.6-.5-1.3-.8-2-.9-.7-1.1-1.8-1.7-3.1-1.7-1.3 0-2.4.6-3.1 1.7-.7.1-1.4.4-2 .9-.6.5-1.1 1.2-1.5 2-.8-.4-1.8-.6-2.8-.2-1.3.4-2.2 1.5-2.2 3.1v1c0 1.2.6 2.3 1.6 2.8M12 10v9M15 13l-3 3-3-3"/></svg>
-                    <span>Upload Konten</span>
-                </button>
-                <button onclick="changePage('data_management')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="data_management">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database-zap mr-3 w-5 h-5"><path d="M12 17c3.9 0 7-1.3 7-3s-3.1-3-7-3-7 1.3-7 3 3.1 3 7 3"/><path d="M12 14c3.9 0 7-1.3 7-3s-3.1-3-7-3-7 1.3-7 3 3.1 3 7 3"/><path d="M12 11c3.9 0 7-1.3 7-3s-3.1-3-7-3-7 1.3-7 3 3.1 3 7 3"/><path d="M10 23l3-7h-3l2-4"/><path d="M4 17v3c0 1.7 3.1 3 7 3s7-1.3 7-3v-3"/></svg>
-                    <span>Manajemen Data</span>
-                </button>
-            </nav>
-        </div>
-
-        <div class="mt-8">
-            <button id="admin-login-button" onclick="promptAdminLogin()" class="w-full flex items-center p-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition duration-150 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-half mr-3 w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 22V2"/></svg>
-                <span id="admin-login-text">Login Admin</span>
-            </button>
         </div>
     </div>
 
     <!-- MAIN CONTENT AREA -->
     <div id="main-content" class="content min-h-screen pt-4 pb-12 transition-all duration-300">
-        
-        <!-- HEADER (Fixed di Desktop, Adaptif di Mobile) -->
+        <!-- Header (tetap) -->
         <header class="header-fixed fixed top-0 w-full z-20 p-4 transition-all duration-300">
             <div class="flex items-center justify-between md:justify-start max-w-7xl mx-auto">
-                <!-- Hamburger Menu (Hanya Mobile) -->
                 <button id="menu-button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg text-white hover:bg-gray-700 mr-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
-                
-                <!-- Search Bar -->
                 <div class="flex items-center w-full max-w-lg bg-[#161b22] rounded-xl border border-gray-700 p-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search text-gray-400 mx-2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <input type="text" id="search-input" placeholder="Cari foto, pengunggah, atau kata kunci..." class="w-full bg-transparent outline-none text-white placeholder-gray-500" oninput="handleSearch(this.value)">
@@ -245,233 +182,144 @@
             
             <!-- HOME PAGE -->
             <section id="page-home" class="page-content">
-                <h1 class="text-3xl font-bold mb-6 text-white">Galeri Foto Terbaru</h1>
-                
-                <!-- Filter Navigasi -->
-                <div class="filter-container mb-6">
-                    <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition mr-3" 
-                            data-filter="all" onclick="setKeywordFilter(this, 'all')">Semua</button>
-                    <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition mr-3" 
-                            data-sort="timestamp-desc" onclick="setSortFilter(this, 'timestamp', 'desc')">Terbaru</button>
-                    <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition mr-3" 
-                            data-sort="timestamp-asc" onclick="setSortFilter(this, 'timestamp', 'asc')">Terlama</button>
-                    <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition mr-3" 
-                            data-sort="title-asc" onclick="setSortFilter(this, 'title', 'asc')">Judul (A-Z)</button>
-                    <!-- Filter kata kunci akan ditambahkan secara dinamis -->
-                    <div id="keyword-filters" class="inline-block"></div>
-                </div>
-
+                <h1 class="text-3xl font-bold mb-6 text-white">Jelajahi Galeri</h1>
                 <div id="photo-grid" class="pb-12">
                     <!-- Foto akan dimuat di sini -->
                 </div>
-                <div id="no-results" class="text-center py-10 hidden">
-                    <p class="text-xl text-gray-500">Tidak ada hasil yang ditemukan untuk pencarian Anda.</p>
-                </div>
-            </section>
-
-            <!-- HISTORY PAGE -->
-            <section id="page-history" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-white">Riwayat Tontonan Anda</h1>
-                <div id="history-list" class="space-y-4">
-                    <!-- Riwayat akan dimuat di sini -->
-                </div>
-                <div id="history-empty" class="text-center py-10 hidden">
-                    <p class="text-xl text-gray-500">Anda belum melihat foto apa pun baru-baru ini.</p>
+                 <div id="no-results" class="text-center py-10 hidden">
+                    <p class="text-xl text-gray-500">Tidak ada hasil yang ditemukan.</p>
                 </div>
             </section>
 
             <!-- FAVORITES PAGE -->
             <section id="page-favorites" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-white">Foto Favorit Anda</h1>
+                <h1 class="text-3xl font-bold mb-6 text-white">Foto Favoritmu</h1>
                 <div id="favorite-grid" class="pb-12">
                     <!-- Foto favorit akan dimuat di sini -->
                 </div>
                 <div id="favorites-empty" class="text-center py-10 hidden">
-                    <p class="text-xl text-gray-500">Anda belum menambahkan foto ke favorit.</p>
-                </div>
-            </section>
-            
-            <!-- NOTIFICATIONS PAGE -->
-            <section id="page-notifications" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-white">Notifikasi Terbaru</h1>
-                <div id="notifications-list" class="space-y-4">
-                    <!-- Notifikasi akan dimuat di sini -->
-                </div>
-                <button onclick="clearNotifications()" class="mt-6 px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition">Hapus Semua Notifikasi</button>
-            </section>
-
-            <!-- DEVELOPER PAGE -->
-            <section id="page-developer" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-white">Tentang Pengembang</h1>
-                <div class="bg-[#161b22] p-6 rounded-xl border border-gray-700 max-w-2xl">
-                    <p class="text-lg mb-4 text-gray-300">saya adalah manusia</p>
-                    <p class="text-lg mb-6 text-gray-300">request upload gambar ke -> <a href="https://www.tiktok.com/@zadostrix" target="_blank" class="text-indigo-400 hover:underline">https://www.tiktok.com/@zadostrix</a></p>
-                    
-                    <h2 class="text-xl font-semibold mb-4 text-white">Hubungi Saya</h2>
-                    <div class="space-y-3">
-                        <a href="https://www.tiktok.com/@zadostrix" target="_blank" class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-gray-400">
-                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-                            </svg>
-                            <span class="text-white">TikTok: @zadostrix</span>
-                        </a>
-                        <a href="https://www.instagram.com/dede260104/" target="_blank" class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-gray-400">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/>
-                            </svg>
-                            <span class="text-white">Instagram: @dede260104</span>
-                        </a>
-                        <a href="mailto:zadpropc@gmail.com" target="_blank" class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-400">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                            <span class="text-white">Email: zadpropc@gmail.com</span>
-                        </a>
-                        <a href="https://www.youtube.com/@BIAK_GAMING" target="_blank" class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-gray-400">
-                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                            </svg>
-                            <span class="text-white">YouTube: @BIAK_GAMING</span>
-                        </a>
-                    </div>
+                    <p class="text-xl text-gray-500">Kamu belum menambahkan foto ke favorit.</p>
                 </div>
             </section>
 
-            <!-- UPLOAD PAGE (ADMIN ONLY) -->
-            <section id="page-upload" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-red-400">ADMIN: Upload Konten Baru</h1>
-                <form id="upload-form" class="bg-[#161b22] p-6 rounded-xl border border-gray-700 space-y-4 max-w-lg">
-                    <div>
-                        <label for="upload-title" class="block text-sm font-medium text-gray-400 mb-1">Judul Foto</label>
-                        <input type="text" id="upload-title" required class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label for="upload-url" class="block text-sm font-medium text-gray-400 mb-1">URL Gambar (Link Langsung)</label>
-                        <input type="url" id="upload-url" required class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label for="upload-uploader" class="block text-sm font-medium text-gray-400 mb-1">Nama Pengunggah</label>
-                        <input type="text" id="upload-uploader" required class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label for="upload-keywords" class="block text-sm font-medium text-gray-400 mb-1">Kata Kunci (Dipisahkan koma)</label>
-                        <input type="text" id="upload-keywords" placeholder="misal: alam, gunung, pagi, hijau" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <button type="submit" class="w-full px-4 py-3 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-700 transition duration-150">
-                        Unggah Foto Baru
-                    </button>
-                </form>
+            <!-- MODIFIKASI BESAR: Halaman Login, Register, & Profil -->
+            <section id="page-login" class="page-content hidden">
+                <div class="max-w-md mx-auto mt-10">
+                    <h2 class="text-3xl font-bold text-center mb-6">Masuk ke Akunmu</h2>
+                    <form id="login-form" class="space-y-4">
+                        <input type="email" id="login-email" placeholder="Email" required class="form-input w-full p-3 rounded-lg">
+                        <input type="password" id="login-password" placeholder="Password" required class="form-input w-full p-3 rounded-lg">
+                        <button type="submit" class="btn-primary w-full p-3 rounded-lg font-semibold">Masuk</button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-400">Belum punya akun? <a href="#" onclick="changePage('register')" class="text-accent-color hover:underline">Daftar di sini</a>.</p>
+                </div>
             </section>
-            
-            <!-- DATA MANAGEMENT PAGE (ADMIN ONLY) -->
-            <section id="page-data_management" class="page-content hidden">
-                <h1 class="text-3xl font-bold mb-6 text-red-400">ADMIN: Manajemen Data Aplikasi</h1>
-                
-                <div class="space-y-6">
-                    <!-- EKSPOR DATA -->
-                    <div class="bg-[#161b22] p-6 rounded-xl border border-gray-700 max-w-2xl">
-                        <h2 class="text-xl font-semibold mb-3 text-white">1. Ekspor Data (Backup)</h2>
-                        <p class="text-gray-400 mb-4">Unduh semua data aplikasi (Foto, Riwayat, Favorit, Notifikasi) sebagai file JSON tunggal.</p>
-                        <button onclick="exportData()" class="px-4 py-2 bg-indigo-600 rounded-lg text-white font-semibold hover:bg-indigo-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                            Download Data Aplikasi
-                        </button>
+
+            <section id="page-register" class="page-content hidden">
+                <div class="max-w-md mx-auto mt-10">
+                    <h2 class="text-3xl font-bold text-center mb-6">Buat Akun Baru</h2>
+                    <form id="register-form" class="space-y-4">
+                        <input type="text" id="register-username" placeholder="Username" required class="form-input w-full p-3 rounded-lg">
+                        <input type="email" id="register-email" placeholder="Email" required class="form-input w-full p-3 rounded-lg">
+                        <input type="password" id="register-password" placeholder="Password" required class="form-input w-full p-3 rounded-lg">
+                        <button type="submit" class="btn-primary w-full p-3 rounded-lg font-semibold">Daftar</button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-400">Sudah punya akun? <a href="#" onclick="changePage('login')" class="text-accent-color hover:underline">Masuk di sini</a>.</p>
+                </div>
+            </section>
+
+            <section id="page-profile" class="page-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold mb-6">Profil Saya</h2>
+                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6">
+                        <div class="flex items-center space-x-4">
+                            <img id="profile-avatar" src="https://via.placeholder.com/100" alt="Avatar" class="w-20 h-20 rounded-full object-cover">
+                            <div>
+                                <h3 id="profile-username" class="text-xl font-semibold">Loading...</h3>
+                                <p id="profile-email" class="text-gray-400">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="avatar-upload" class="btn-primary inline-block p-2 rounded-lg cursor-pointer">Ganti Avatar</label>
+                            <input type="file" id="avatar-upload" accept="image/*" class="hidden">
+                        </div>
                     </div>
 
-                    <!-- IMPOR DATA -->
-                    <div class="bg-[#161b22] p-6 rounded-xl border border-gray-700 max-w-2xl">
-                        <h2 class="text-xl font-semibold mb-3 text-white">2. Impor Data (Restore)</h2>
-                        <p class="text-gray-400 mb-4">Pilih file JSON backup untuk memulihkan atau menimpa seluruh data aplikasi.</p>
-                        <input type="file" id="import-file" accept=".json" class="block w-full text-sm text-gray-400
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-lg file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-red-600 file:text-white
-                            hover:file:bg-red-700
-                        ">
-                        <button onclick="importData()" class="mt-4 px-4 py-2 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-700 transition" disabled id="import-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                            Impor & Timpa Data
-                        </button>
-                        <p class="text-sm text-yellow-500 mt-2">PERINGATAN: Operasi ini akan menimpa SEMUA data lokal Anda.</p>
-                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Unggah Foto Baru</h3>
+                    <form id="upload-form" class="bg-gray-800 p-6 rounded-xl border border-gray-700 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Judul Foto</label>
+                            <input type="text" id="upload-title" required class="form-input w-full p-3 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Deskripsi</label>
+                            <textarea id="upload-description" rows="3" class="form-input w-full p-3 rounded-lg"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Unggah dari Perangkat</label>
+                            <input type="file" id="upload-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent-color file:text-white hover:file:bg-accent-hover">
+                        </div>
+                        <div class="relative">
+                            <p class="text-center text-gray-500 my-2">atau</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">URL Gambar (Link)</label>
+                            <input type="url" id="upload-url" placeholder="https://..." class="form-input w-full p-3 rounded-lg">
+                        </div>
+                        <button type="submit" class="btn-primary w-full p-3 rounded-lg font-semibold">Unggah Foto</button>
+                    </form>
 
-                    <!-- HAPUS DATA -->
-                    <div class="bg-red-900/30 p-6 rounded-xl border border-red-700 max-w-2xl">
-                        <h2 class="text-xl font-semibold mb-3 text-red-400">3. Hapus Semua Data Aplikasi</h2>
-                        <p class="text-gray-400 mb-4">Hapus secara permanen semua foto, riwayat, dan data lainnya dari browser ini.</p>
-                        <button onclick="clearAllData()" class="px-4 py-2 bg-red-700 rounded-lg text-white font-semibold hover:bg-red-800 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 inline-block mr-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                            Hapus Permanen
-                        </button>
+                    <h3 class="text-2xl font-bold mb-4 mt-8">Foto-Fotoku</h3>
+                    <div id="profile-grid" class="pb-12">
+                        <!-- Foto user akan dimuat di sini -->
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
-    <!-- PHOTO DETAIL MODAL -->
-    <div id="photo-modal-overlay" class="fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-90 backdrop-blur-md">
-        <div id="photo-modal-content" class="bg-[#161b22] rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-gray-700">
-            
-            <!-- Konten Utama Foto -->
+    <!-- PHOTO DETAIL MODAL (Dimodifikasi) -->
+    <div id="photo-modal-overlay" class="modal-overlay fixed inset-0 z-50 items-center justify-center">
+        <div id="photo-modal-content" class="modal-content rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
             <div class="md:w-3/5 relative flex-shrink-0 h-1/2 md:h-full">
                 <button onclick="closePhotoModal()" class="absolute top-3 left-3 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 rounded-full text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
                 <img id="modal-photo-img" src="" alt="Detail Foto" class="w-full h-full object-contain bg-black">
             </div>
-
-            <!-- Detail & Rekomendasi (Sidebar Modal) -->
             <div class="md:w-2/5 p-5 flex flex-col overflow-y-auto h-1/2 md:h-full">
                 <div class="flex items-start justify-between mb-4">
                     <h2 id="modal-photo-title" class="text-2xl font-bold text-white pr-4"></h2>
-                    <button id="modal-favorite-btn" class="text-gray-400 hover:text-red-500 transition duration-150 p-2 rounded-full flex-shrink-0">
-                        <!-- Icon Favorit akan dimuat di sini -->
+                </div>
+                <p id="modal-photo-description" class="text-gray-300 mb-2"></p>
+                <div class="flex items-center mb-4">
+                    <img id="modal-uploader-avatar" src="" alt="Uploader" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <p id="modal-photo-uploader" class="font-semibold text-indigo-400"></p>
+                        <p id="modal-photo-date" class="text-xs text-gray-500"></p>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 mb-4">
+                    <button id="modal-like-btn" class="icon-btn flex items-center space-x-1">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
+                        <span id="modal-like-count">0</span>
+                    </button>
+                    <button id="modal-favorite-btn" class="icon-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                     </button>
                 </div>
-                
-                <p class="text-sm text-gray-400 mb-2">Diunggah oleh: <span id="modal-photo-uploader" class="font-semibold text-indigo-400"></span></p>
-                <p class="text-sm text-gray-400 mb-4">ID: <span id="modal-photo-id" class="font-mono text-xs text-gray-500"></span></p>
 
-                <!-- Tombol Hapus (Admin Only) -->
-                <button id="modal-delete-btn" onclick="deletePhotoFromModal()" class="hidden mb-4 px-4 py-2 bg-red-700 rounded-lg text-white font-semibold hover:bg-red-800 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 inline-block mr-1"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                    Hapus Foto (Admin)
-                </button>
-                
                 <h3 class="text-xl font-semibold text-white mb-3 border-t border-gray-700 pt-4">Rekomendasi</h3>
-                
-                <!-- Filter Rekomendasi -->
-                <div class="filter-container mb-4">
-                    <button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 transition mr-2" 
-                            data-filter="keywords" onclick="setRecFilter(this, 'keywords')">Kata Kunci Serupa</button>
-                    <button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 hover:bg-gray-600 transition mr-2" 
-                            data-filter="uploader" onclick="setRecFilter(this, 'uploader')">Pengunggah Sama</button>
-                    <button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 hover:bg-gray-600 transition mr-2" 
-                            data-sort="timestamp-desc" onclick="setRecSortFilter(this, 'timestamp', 'desc')">Terbaru</button>
-                    <button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 hover:bg-gray-600 transition mr-2" 
-                            data-sort="timestamp-asc" onclick="setRecSortFilter(this, 'timestamp', 'asc')">Terlama</button>
-                    <button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 hover:bg-gray-600 transition mr-2" 
-                            data-sort="title-asc" onclick="setRecSortFilter(this, 'title', 'asc')">Judul (A-Z)</button>
-                    <!-- Filter kata kunci akan ditambahkan secara dinamis -->
-                    <div id="rec-keyword-filters" class="inline-block"></div>
-                </div>
-
                 <div id="photo-recommendations" class="space-y-3 flex-grow pr-1 overflow-y-auto">
-                    <!-- Rekomendasi dimuat oleh JS -->
+                    <p class="text-gray-500 text-center">Belum ada rekomendasi.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container">
-        <!-- Toast akan dimasukkan di sini oleh JS -->
-    </div>
-    
-    <!-- CUSTOM CONFIRMATION MODAL -->
+    <!-- Toast & Custom Confirm (tetap) -->
+    <div id="toast-container"></div>
     <div id="custom-confirm-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm border border-gray-700">
             <h3 id="confirm-title" class="text-xl font-bold text-white mb-4"></h3>
@@ -484,191 +332,406 @@
     </div>
 
     <script>
-// ==================== KODE JAVASCRIPT LENGKAP UNTUK NETLIFY ====================
+// ==================== MODIFIKASI BESAR: KODE JAVASCRIPT UTAMA ====================
 
 // --- KONFIGURASI & GLOBAL VARIABLES ---
-const ADMIN_PASSWORD = 'z26a01d04';
-
-// FUNGSI UNTUK MENGAMBIL KONFIGURASI (API KEY) DARI NETLIFY
-// Fungsi ini akan mencoba mengambil API Key dari Environment Variable Netlify saat di-hosting.
-// Jika gagal (misal saat dijalankan di komputer lokal), akan menggunakan nilai hardcoded.
 async function getConfig() {
     try {
-        // Di Netlify, environment variables bisa diakses via fetch ke endpoint khusus
         const response = await fetch('/.netlify/env');
         const env = await response.json();
-        return {
-            SUPABASE_URL: env.SUPABASE_URL,
-            SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY
-        };
+        return { SUPABASE_URL: env.SUPABASE_URL, SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY };
     } catch (error) {
-        console.error("Could not load Netlify env vars, falling back to hardcoded values for local development.");
-        // Nilai ini hanya untuk development lokal, tidak akan digunakan di Netlify jika env vars sudah diset
+        console.error("Could not load Netlify env vars, falling back to hardcoded values.");
         return {
             SUPABASE_URL: "https://vqvdkrmrfbmvtcvdwjhr.supabase.co",
             SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxdmRrcm1yZmJtdnRjdmR3amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2MzIxMjcsImV4cCI6MjA3NTIwODEyN30.tFs_JsidS5H99PiBpIMYkI83aQXz6NTBYTlWL25ixcg"
         };
     }
 }
-
-// Supabase client akan diinisialisasi nanti setelah konfigurasi didapat
 let supabase;
 
-// Fungsi lain (history, favorites, notifications) tetap pakai localStorage
-const LS_HISTORY_KEY = 'bogelstudio_history';
-const LS_FAVORITES_KEY = 'bogelstudio_favorites';
-const LS_NOTIFS_KEY = 'bogelstudio_notifications';
-
-let photos = []; // Data foto akan diisi dari server
-let history = JSON.parse(localStorage.getItem(LS_HISTORY_KEY) || '[]');
-let favorites = JSON.parse(localStorage.getItem(LS_FAVORITES_KEY) || '[]');
-let notifications = JSON.parse(localStorage.getItem(LS_NOTIFS_KEY) || '[]');
-let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+// State global untuk user dan data
+let user = null;
+let photos = [];
+let favorites = JSON.parse(localStorage.getItem('bogelstudio_favorites') || '[]');
 let currentSort = { field: 'created_at', direction: 'desc' };
-let currentRecFilter = 'keywords';
-let currentRecSort = { field: 'created_at', direction: 'desc' };
 let currentKeywordFilter = 'all';
 
-// --- FUNGSI UNTUK MENGAMBIL DATA DARI SERVER ---
-async function loadPhotosFromServer() {
-    try {
-        showToast('Memuat data dari server...', 'info');
-        const { data, error } = await supabase
-            .from('photos')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        
-        photos = data || [];
-        showToast('Data berhasil dimuat!', 'success');
-        
-        renderPhotoGrid(photos);
-        renderKeywordFilters();
-    } catch (error) {
-        console.error('Error loading photos:', error);
-        showToast('Gagal memuat data dari server.', 'error');
-    }
+// --- FUNGSI AUTENTIKASI (BARU) ---
+async function signUp() {
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    
+    const { data, error } = await supabase.auth.signUp({
+        email, password, options: { data: { full_name: username } }
+    });
+    if (error) return showToast(error.message, 'error');
+    
+    showToast('Pendaftaran berhasil! Silakan cek email untuk verifikasi.', 'success');
+    changePage('login');
 }
 
-// --- FUNGSI UPLOAD (MENGIRIM KE SERVER) ---
+async function signIn() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return showToast(error.message, 'error');
+    user = data.user;
+    showToast('Login berhasil!', 'success');
+    updateUIForAuthStatus();
+    changePage('home');
+}
+
+async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) return showToast(error.message, 'error');
+    user = null;
+    showToast('Anda telah logout.', 'info');
+    updateUIForAuthStatus();
+    changePage('home');
+}
+
+// --- FUNGSI UNTUK MEMPERBARUI UI BERDASARKAN STATUS LOGIN ---
+function updateUIForAuthStatus() {
+    const authMenu = document.getElementById('auth-menu');
+    if (user) {
+        authMenu.innerHTML = `
+            <button onclick="changePage('profile')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="profile">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user mr-3 w-5 h-5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Profil Saya</span>
+            </button>
+            <button onclick="signOut()" class="w-full flex items-center p-3 rounded-xl bg-red-600 hover:bg-red-700 transition duration-150 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out mr-3 w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+                <span>Logout</span>
+            </button>
+        `;
+    } else {
+        authMenu.innerHTML = `
+            <button onclick="changePage('login')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="login">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in mr-3 w-5 h-5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
+                <span>Login</span>
+            </button>
+            <button onclick="changePage('register')" class="nav-button w-full flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-150" data-page="register">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus mr-3 w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
+                <span>Daftar</span>
+            </button>
+        `;
+    }
+    if (document.getElementById('page-home').classList.contains('active')) renderPhotoGrid(photos);
+    if (document.getElementById('page-favorites').classList.contains('active')) renderFavorites();
+}
+
+// --- FUNGSI PROFIL (BARU) ---
+async function loadProfile() {
+    if (!user) return;
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (error) return console.error(error);
+    
+    document.getElementById('profile-username').innerText = data.username || 'Tanpa Nama';
+    document.getElementById('profile-email').innerText = user.email;
+    if (data.avatar_url) {
+        document.getElementById('profile-avatar').src = data.avatar_url;
+    }
+    renderProfileGrid();
+}
+
+async function handleAvatarUpload(event) {
+    if (!user) return showToast('Anda harus login!', 'error');
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
+    if (uploadError) return showToast(uploadError.message, 'error');
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+    if (updateError) return showToast(updateError.message, 'error');
+    
+    document.getElementById('profile-avatar').src = publicUrl;
+    showToast('Avatar berhasil diperbarui!', 'success');
+}
+
+// --- FUNGSI UPLOAD FOTO (DIMODIFIKASI) ---
 async function handleUpload(event) {
     event.preventDefault();
-    if (!isAdmin) { showToast('Anda bukan Admin!', 'error'); return; }
+    if (!user) return showToast('Anda harus login!', 'error');
 
     const title = document.getElementById('upload-title').value.trim();
-    const url = document.getElementById('upload-url').value.trim();
-    const uploader = document.getElementById('upload-uploader').value.trim();
-    const keywords = document.getElementById('upload-keywords').value.trim();
-
-    if (!title || !url || !uploader) { showToast('Semua field wajib diisi!', 'error'); return; }
-
-    try {
-        const { data, error } = await supabase
-            .from('photos')
-            .insert([{ title, url, uploader, keywords }])
-            .select();
-
-        if (error) throw error;
-        
-        photos.unshift(data[0]);
-        showToast('Foto berhasil diunggah ke server!', 'success');
-        document.getElementById('upload-form').reset();
-        changePage('home');
-    } catch (error) {
-        console.error('Error uploading photo:', error);
-        showToast('Terjadi kesalahan saat mengunggah.', 'error');
-    }
-}
-
-// --- FUNGSI DELETE (MENGHAPUS DARI SERVER) ---
-async function deletePhoto(photoId) {
-    const confirmed = await customConfirm('Hapus Foto', 'Apakah Anda yakin ingin menghapus foto ini secara permanen?');
-    if (!confirmed) return;
-
-    try {
-        const { error } = await supabase
-            .from('photos')
-            .delete()
-            .eq('id', photoId);
-
-        if (error) throw error;
-
-        photos = photos.filter(p => p.id !== photoId);
-        showToast('Foto berhasil dihapus dari server.', 'success');
-        closePhotoModal();
-        renderPhotoGrid(photos);
-        logNotification(`Sebuah foto telah dihapus oleh Admin.`, 'error');
-    } catch (error) {
-        console.error('Error deleting photo:', error);
-        showToast('Gagal menghapus foto.', 'error');
-    }
-}
-
-// --- SEMUA FUNGSI LAINNYA (TIDAK PERLU DIUBAH) ---
-function saveData(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error(`Gagal menyimpan data untuk kunci ${key}:`, e); showToast('Gagal menyimpan data lokal!', 'error'); } }
-function showToast(message, type = 'info') { const container = document.getElementById('toast-container'); if (!container) return; const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.textContent = message; container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 4000); }
-function customConfirm(title, message) { return new Promise((resolve) => { const overlay = document.getElementById('custom-confirm-overlay'); const titleEl = document.getElementById('confirm-title'); const messageEl = document.getElementById('confirm-message'); const btnYes = document.getElementById('confirm-yes'); const btnNo = document.getElementById('confirm-no'); if (!overlay || !titleEl || !messageEl || !btnYes || !btnNo) return resolve(false); titleEl.textContent = title; messageEl.textContent = message; overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10); const cleanup = (result) => { overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300); btnYes.onclick = null; btnNo.onclick = null; resolve(result); }; btnYes.onclick = () => cleanup(true); btnNo.onclick = () => cleanup(false); }); }
-function logNotification(message, type = 'info') { const newNotif = { id: crypto.randomUUID(), message, type, read: false, timestamp: Date.now() }; notifications.unshift(newNotif); if (notifications.length > 20) notifications = notifications.slice(0, 20); saveData(LS_NOTIFS_KEY, notifications); updateNotifBadge(); }
-function updateNotifBadge() { const badge = document.getElementById('notif-badge'); const unreadCount = notifications.filter(n => !n.read).length; if (badge) { if (unreadCount > 0) { badge.textContent = unreadCount; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } } }
-function renderNotifications() { const list = document.getElementById('notifications-list'); if (!list) return; if (notifications.length === 0) { list.innerHTML = '<p class="text-gray-500">Tidak ada notifikasi baru.</p>'; return; } list.innerHTML = notifications.map(n => { const bgColor = n.type === 'success' ? 'bg-green-900/30 border-green-700' : n.type === 'error' ? 'bg-red-900/30 border-red-700' : 'bg-gray-800 border-gray-700'; const readClass = n.read ? 'opacity-60' : 'font-medium'; const timeAgo = new Date(n.timestamp).toLocaleString('id-ID'); return `<div class="p-4 rounded-xl border ${bgColor} ${readClass}"><p class="text-sm">${n.message}</p><p class="text-xs text-gray-500 mt-1">${timeAgo}</p></div>`; }).join(''); notifications = notifications.map(n => ({ ...n, read: true })); saveData(LS_NOTIFS_KEY, notifications); updateNotifBadge(); }
-function clearNotifications() { customConfirm('Hapus Notifikasi', 'Apakah Anda yakin ingin menghapus semua notifikasi?').then((confirmed) => { if (confirmed) { notifications = []; saveData(LS_NOTIFS_KEY, notifications); renderNotifications(); showToast('Semua notifikasi telah dihapus.', 'success'); } }); }
-function logHistory(photo) { const historyItem = { photoId: photo.id, title: photo.title, timestamp: Date.now() }; history = history.filter(item => item.photoId !== photo.id); history.unshift(historyItem); if (history.length > 20) history = history.slice(0, 20); saveData(LS_HISTORY_KEY, history); }
-function renderHistory() { const list = document.getElementById('history-list'); if (!list) return; if (history.length === 0) { document.getElementById('history-empty').classList.remove('hidden'); list.innerHTML = ''; return; } document.getElementById('history-empty').classList.add('hidden'); list.innerHTML = history.map(item => { const photo = photos.find(p => p.id === item.photoId); const timeAgo = new Date(item.timestamp).toLocaleString('id-ID'); if (!photo) return ''; return `<div class="flex items-center p-4 bg-gray-800 rounded-xl border border-gray-700 hover:bg-gray-700/50 transition cursor-pointer" onclick="openPhotoModal('${photo.id}')"><img src="${photo.url}" alt="${photo.title}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0 mr-4"><div class="flex-grow"><p class="text-white font-semibold">${photo.title}</p><p class="text-xs text-gray-400">Dilihat: ${timeAgo}</p></div></div>`; }).join(''); }
-function isFavorite(photoId) { return favorites.includes(photoId); }
-function toggleFavorite(photoId) { const index = favorites.indexOf(photoId); const photo = photos.find(p => p.id === photoId); if (!photo) return; if (index > -1) { favorites.splice(index, 1); showToast(`"${photo.title}" dihapus dari favorit.`, 'info'); logNotification(`Anda menghapus "${photo.title}" dari favorit.`, 'info'); } else { favorites.push(photoId); showToast(`"${photo.title}" ditambahkan ke favorit!`, 'success'); logNotification(`Anda menambahkan "${photo.title}" ke favorit.`, 'success'); } saveData(LS_FAVORITES_KEY, favorites); updateFavoriteButton(photoId); if (document.getElementById('page-favorites').classList.contains('active')) renderFavorites(); }
-function updateFavoriteButton(photoId) { const btn = document.getElementById('modal-favorite-btn'); if (!btn) return; const isFav = isFavorite(photoId); btn.innerHTML = isFav ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart text-red-500 w-6 h-6"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 1.05-4.5 3-1.5-1.95-2.74-3-4.5-3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart w-6 h-6"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 1.05-4.5 3-1.5-1.95-2.74-3-4.5-3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>'; btn.onclick = () => toggleFavorite(photoId); }
-function renderFavorites() { const grid = document.getElementById('favorite-grid'); if (!grid) return; const favoritePhotos = photos.filter(p => favorites.includes(p.id)); if (favoritePhotos.length === 0) { document.getElementById('favorites-empty').classList.remove('hidden'); grid.innerHTML = ''; return; } document.getElementById('favorites-empty').classList.add('hidden'); renderPhotoGrid(favoritePhotos, 'favorite-grid'); }
-function generatePhotoCard(photo) { const isFav = isFavorite(photo.id); const favIcon = isFav ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart text-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 1.05-4.5 3-1.5-1.95-2.74-3-4.5-3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 1.05-4.5 3-1.5-1.95-2.74-3-4.5-3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`; return `<div class="photo-card bg-[#161b22] rounded-xl shadow-lg overflow-hidden border border-gray-700 hover:border-indigo-500 transition duration-300"><div class="relative cursor-pointer" onclick="openPhotoModal('${photo.id}')"><img src="${photo.url}" alt="${photo.title}" class="w-full h-48 object-cover transition duration-300 hover:scale-[1.03]"><div class="absolute inset-0 bg-black opacity-20 hover:opacity-0 transition"></div></div><div class="p-4"><h3 class="text-lg font-semibold text-white truncate mb-1">${photo.title}</h3><p class="text-sm text-gray-400 mb-3 truncate">Oleh: ${photo.uploader}</p><div class="flex justify-between items-center"><span class="text-xs text-gray-500">${new Date(photo.created_at).toLocaleDateString('id-ID')}</span><button class="text-gray-400 hover:text-red-500 transition duration-150" onclick="event.stopPropagation(); toggleFavorite('${photo.id}')">${favIcon}</button></div></div></div>`; }
-function sortPhotos(photoArray, field, direction) { return photoArray.sort((a, b) => { let valA = a[field]; let valB = b[field]; if (field === 'title') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); } if (valA < valB) return direction === 'asc' ? -1 : 1; if (valA > valB) return direction === 'asc' ? 1 : -1; return 0; }); }
-function setSortFilter(button, field, direction) { currentSort = { field, direction }; const allButtons = document.querySelectorAll('.filter-btn[data-sort]'); allButtons.forEach(btn => { btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); btn.classList.add('bg-gray-700', 'hover:bg-gray-600'); }); button.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); button.classList.remove('bg-gray-700', 'hover:bg-gray-600'); renderPhotoGrid(photos, 'photo-grid'); }
-function setKeywordFilter(button, keyword) { currentKeywordFilter = keyword; const allButtons = document.querySelectorAll('.filter-btn[data-filter]'); allButtons.forEach(btn => { btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); btn.classList.add('bg-gray-700', 'hover:bg-gray-600'); }); button.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); button.classList.remove('bg-gray-700', 'hover:bg-gray-600'); renderPhotoGrid(photos, 'photo-grid'); }
-function extractKeywords() { const keywordSet = new Set(); photos.forEach(photo => { if (photo.keywords) { const keywords = photo.keywords.split(',').map(k => k.trim().toLowerCase()); keywords.forEach(keyword => { if (keyword) keywordSet.add(keyword); }); } }); return Array.from(keywordSet); }
-function renderKeywordFilters() { const container = document.getElementById('keyword-filters'); if (!container) return; const keywords = extractKeywords(); container.innerHTML = keywords.map(keyword => `<button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition mr-3" data-filter="${keyword}" onclick="setKeywordFilter(this, '${keyword}')">${keyword}</button>`).join(''); }
-function renderPhotoGrid(photoArray, containerId = 'photo-grid') { const grid = document.getElementById(containerId); if (!grid) return; let displayPhotos = [...photoArray]; if (containerId === 'photo-grid') { displayPhotos = sortPhotos(displayPhotos, currentSort.field, currentSort.direction); if (currentKeywordFilter !== 'all') { displayPhotos = displayPhotos.filter(photo => { if (!photo.keywords) return false; const keywords = photo.keywords.split(',').map(k => k.trim().toLowerCase()); return keywords.includes(currentKeywordFilter.toLowerCase()); }); } } const searchTerm = document.getElementById('search-input')?.value.toLowerCase().trim() || ''; if (searchTerm !== '' && containerId === 'photo-grid') { displayPhotos = displayPhotos.filter(photo => photo.title.toLowerCase().includes(searchTerm) || photo.uploader.toLowerCase().includes(searchTerm) || photo.keywords.toLowerCase().includes(searchTerm)); } if (displayPhotos.length === 0 && containerId === 'photo-grid') { document.getElementById('no-results').classList.remove('hidden'); } else { document.getElementById('no-results')?.classList.add('hidden'); } grid.innerHTML = displayPhotos.map(generatePhotoCard).join(''); }
-function handleSearch(term) { renderPhotoGrid(photos, 'photo-grid'); }
-function setRecFilter(button, filterType) { currentRecFilter = filterType; const allButtons = document.querySelectorAll('.rec-filter-btn[data-filter]'); allButtons.forEach(btn => { btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); btn.classList.add('bg-gray-700', 'hover:bg-gray-600'); }); button.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); button.classList.remove('bg-gray-700', 'hover:bg-gray-600'); const modal = document.getElementById('photo-modal-overlay'); const photoId = modal.getAttribute('data-current-photo-id'); if (photoId) generateRecommendations(photoId, filterType); }
-function setRecSortFilter(button, field, direction) { currentRecSort = { field, direction }; const allButtons = document.querySelectorAll('.rec-filter-btn[data-sort]'); allButtons.forEach(btn => { btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); btn.classList.add('bg-gray-700', 'hover:bg-gray-600'); }); button.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); button.classList.remove('bg-gray-700', 'hover:bg-gray-600'); const modal = document.getElementById('photo-modal-overlay'); const photoId = modal.getAttribute('data-current-photo-id'); if (photoId) generateRecommendations(photoId, currentRecFilter); }
-function setRecKeywordFilter(button, keyword) { const allButtons = document.querySelectorAll('#rec-keyword-filters .rec-filter-btn'); allButtons.forEach(btn => { btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); btn.classList.add('bg-gray-700', 'hover:bg-gray-600'); }); button.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); button.classList.remove('bg-gray-700', 'hover:bg-gray-600'); const modal = document.getElementById('photo-modal-overlay'); const photoId = modal.getAttribute('data-current-photo-id'); if (photoId) generateRecommendationsByKeyword(photoId, keyword); }
-function renderRecKeywordFilters() { const container = document.getElementById('rec-keyword-filters'); if (!container) return; const keywords = extractKeywords(); container.innerHTML = keywords.map(keyword => `<button class="rec-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 hover:bg-gray-600 transition mr-2" data-filter="${keyword}" onclick="setRecKeywordFilter(this, '${keyword}')">${keyword}</button>`).join(''); }
-function generateRecommendations(currentPhotoId, filter = currentRecFilter) { const recContainer = document.getElementById('photo-recommendations'); if (!recContainer) return; const currentPhoto = photos.find(p => p.id == currentPhotoId); if (!currentPhoto) return; let recommendations = []; if (filter === 'keywords') { recommendations = generateRecommendationsByKeyword(currentPhotoId, currentPhoto.keywords); } else if (filter === 'uploader') { recommendations = photos.filter(p => p.uploader === currentPhoto.uploader && p.id !== currentPhoto.id); } recommendations = recommendations.slice(0, 5); if (recommendations.length === 0) { recContainer.innerHTML = '<p class="text-gray-500 text-center">Belum ada rekomendasi.</p>'; return; } recContainer.innerHTML = recommendations.map(photo => `<div class="flex items-center p-2 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer" onclick="openPhotoModal('${photo.id}')"><img src="${photo.url}" alt="${photo.title}" class="w-12 h-12 object-cover rounded flex-shrink-0 mr-3"><div class="flex-grow"><p class="text-sm text-white font-medium truncate">${photo.title}</p><p class="text-xs text-gray-400">${photo.uploader}</p></div></div>`).join(''); }
-function generateRecommendationsByKeyword(currentPhotoId, keywordString) { if (!keywordString) return []; const keywords = keywordString.split(',').map(k => k.trim().toLowerCase()); const recommendations = photos.filter(photo => { if (photo.id == currentPhotoId) return false; if (!photo.keywords) return false; const photoKeywords = photo.keywords.split(',').map(k => k.trim().toLowerCase()); return keywords.some(kw => photoKeywords.includes(kw)); }); return recommendations; }
-function openPhotoModal(photoId) { const modal = document.getElementById('photo-modal-overlay'); const photo = photos.find(p => p.id == photoId); if (!photo || !modal) return; document.getElementById('modal-photo-img').src = photo.url; document.getElementById('modal-photo-title').textContent = photo.title; document.getElementById('modal-photo-uploader').textContent = photo.uploader; document.getElementById('modal-photo-id').textContent = photo.id; updateFavoriteButton(photo.id); logHistory(photo); const deleteBtn = document.getElementById('modal-delete-btn'); deleteBtn.classList.toggle('hidden', !isAdmin); renderRecKeywordFilters(); const recBtn = document.querySelector(`.rec-filter-btn[data-filter="keywords"]`); if (recBtn) setRecFilter(recBtn, 'keywords'); modal.classList.add('show-flex'); document.body.style.overflow = 'hidden'; modal.setAttribute('data-current-photo-id', photoId); }
-function closePhotoModal() { const modal = document.getElementById('photo-modal-overlay'); if (modal) { modal.classList.remove('show-flex'); document.body.style.overflow = ''; } }
-function deletePhotoFromModal() { const modal = document.getElementById('photo-modal-overlay'); const photoId = modal.getAttribute('data-current-photo-id'); if (photoId) { deletePhoto(parseInt(photoId, 10)); } }
-function updateAdminUI() { const adminMenu = document.getElementById('admin-menu'); const loginBtn = document.getElementById('admin-login-button'); const loginText = document.getElementById('admin-login-text'); if (isAdmin) { adminMenu.classList.remove('hidden'); loginBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700'); loginBtn.classList.add('bg-red-700', 'hover:bg-red-800'); loginText.textContent = 'Logout Admin'; } else { adminMenu.classList.add('hidden'); loginBtn.classList.remove('bg-red-700', 'hover:bg-red-800'); loginBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700'); loginText.textContent = 'Login Admin'; } }
-function promptAdminLogin() { if (isAdmin) { isAdmin = false; sessionStorage.removeItem('isAdmin'); updateAdminUI(); showToast('Anda telah logout dari Admin.', 'info'); changePage('home'); return; } const password = prompt('Masukkan password Admin:'); if (password === ADMIN_PASSWORD) { isAdmin = true; sessionStorage.setItem('isAdmin', 'true'); updateAdminUI(); showToast('Login Admin berhasil!', 'success'); logNotification('Admin telah login.', 'success'); changePage('home'); } else { showToast('Password salah!', 'error'); } }
-function exportData() { const dataToExport = { photos, history, favorites, notifications }; const dataStr = JSON.stringify(dataToExport, null, 2); const dataBlob = new Blob([dataStr], { type: 'application/json' }); const url = URL.createObjectURL(dataBlob); const link = document.createElement('a'); link.href = url; link.download = `bogelstudio_data_${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showToast('Data berhasil diekspor!', 'success'); }
-function importData() { const fileInput = document.getElementById('import-file'); const file = fileInput.files[0]; if (!file) { showToast('Pilih file JSON terlebih dahulu.', 'error'); return; } const reader = new FileReader(); reader.onload = function(event) { try { const importedData = JSON.parse(event.target.result); if (importedData.photos) photos = importedData.photos; if (importedData.history) history = importedData.history; if (importedData.favorites) favorites = importedData.favorites; if (importedData.notifications) notifications = importedData.notifications; saveData(LS_HISTORY_KEY, history); saveData(LS_FAVORITES_KEY, favorites); saveData(LS_NOTIFS_KEY, notifications); renderPhotoGrid(photos); renderKeywordFilters(); updateNotifBadge(); showToast('Data berhasil diimpor dan ditimpa!', 'success'); changePage('home'); } catch (e) { console.error(e); showToast('Gagal membaca file JSON. Pastikan formatnya benar.', 'error'); } }; reader.readAsText(file); }
-function clearAllData() { customConfirm('Hapus Semua Data', 'PERINGATAN: Ini akan menghapus SEMUA data dari browser ini (foto, riwayat, favorit, notifikasi) dan tidak bisa dibatalkan. Lanjutkan?').then((confirmed) => { if (confirmed) { photos = []; history = []; favorites = []; notifications = []; localStorage.clear(); renderPhotoGrid(photos); updateNotifBadge(); showToast('Semua data lokal telah dihapus.', 'success'); changePage('home'); } }); }
-function changePage(pageId) { const pages = document.querySelectorAll('.page-content'); const navButtons = document.querySelectorAll('.nav-button'); const pageElement = document.getElementById(`page-${pageId}`); if ((pageId === 'upload' || pageId === 'data_management') && !isAdmin) { promptAdminLogin(); return; } pages.forEach(page => { page.classList.add('hidden'); page.classList.remove('active'); }); navButtons.forEach(btn => { btn.classList.remove('active-nav-link'); }); if (pageElement) { pageElement.classList.remove('hidden'); pageElement.classList.add('active'); } const activeBtn = document.querySelector(`.nav-button[data-page="${pageId}"]`); if (activeBtn) { activeBtn.classList.add('active-nav-link'); } if (pageId === 'home') { renderPhotoGrid(photos); renderKeywordFilters(); } if (pageId === 'history') renderHistory(); if (pageId === 'favorites') renderFavorites(); if (pageId === 'notifications') renderNotifications(); if (window.innerWidth < 768) closeSidebar(); }
-function toggleSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (sidebar && overlay) { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); } }
-function closeSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (sidebar && overlay) { sidebar.classList.remove('open'); overlay.classList.remove('active'); } }
-
-// --- INISIALISASI UTAMA (DIMODIFIKASI) ---
-document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Ambil konfigurasi (API Key) terlebih dahulu
-    const config = await getConfig();
+    const description = document.getElementById('upload-description').value.trim();
+    const fileInput = document.getElementById('upload-file');
+    const urlInput = document.getElementById('upload-url').value.trim();
     
-    // 2. Inisialisasi Supabase client dengan konfigurasi yang sudah didapat
+    let photoUrl = urlInput;
+
+    if (fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage.from('photos').upload(fileName, file);
+        if (uploadError) return showToast(uploadError.message, 'error');
+        
+        const { data: { publicUrl } } = supabase.storage.from('photos').getPublicUrl(fileName);
+        photoUrl = publicUrl;
+    }
+
+    if (!title || !photoUrl) return showToast('Judul dan sumber foto harus diisi!', 'error');
+
+    const { data, error } = await supabase.from('photos').insert({
+        title, description, url: photoUrl, user_id: user.id, keywords: ''
+    }).select().single();
+
+    if (error) return showToast(error.message, 'error');
+    
+    photos.unshift(data);
+    showToast('Foto berhasil diunggah!', 'success');
+    document.getElementById('upload-form').reset();
+    renderProfileGrid();
+}
+
+// --- FUNGSI LIKE (BARU) ---
+async function toggleLike(photoId) {
+    if (!user) return showToast('Anda harus login untuk menyukai foto!', 'error');
+    
+    const { data: existingLike } = await supabase.from('likes').select('*').eq('photo_id', photoId).eq('user_id', user.id).single();
+    
+    if (existingLike) {
+        await supabase.from('likes').delete().eq('id', existingLike.id);
+        await supabase.rpc('decrement_likes', { row_id: photoId });
+    } else {
+        await supabase.from('likes').insert({ photo_id: photoId, user_id: user.id });
+        await supabase.rpc('increment_likes', { row_id: photoId });
+    }
+    
+    await loadPhotosFromServer();
+    const photo = photos.find(p => p.id === photoId);
+    updateLikeButton(photoId, photo);
+}
+
+// --- FUNGSI RENDER (DIMODIFIKASI) ---
+async function loadPhotosFromServer() {
+    try {
+        const { data, error } = await supabase.from('photos').select(`*, profiles ( username, avatar_url )`).order('created_at', { ascending: false });
+        if (error) throw error;
+        photos = data || [];
+        renderPhotoGrid(photos);
+    } catch (error) {
+        console.error('Error loading photos:', error);
+        showToast('Gagal memuat data.', 'error');
+    }
+}
+
+function generatePhotoCard(photo) {
+    const isFav = favorites.includes(photo.id);
+    const likeCount = photo.likes_count || 0;
+    const uploader = photo.profiles || { username: 'Unknown', avatar_url: 'https://via.placeholder.com/40' };
+    
+    return `
+        <div class="photo-card">
+            <div class="relative cursor-pointer" onclick="openPhotoModal(${photo.id})">
+                <img src="${photo.url}" alt="${photo.title}" class="w-full h-48 object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-all duration-300 flex items-end p-4">
+                    <div class="text-white">
+                        <p class="font-semibold">${photo.title}</p>
+                        <p class="text-sm opacity-80">${photo.description || 'Tidak ada deskripsi'}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center mb-3">
+                    <img src="${uploader.avatar_url}" alt="${uploader.username}" class="w-8 h-8 rounded-full mr-2">
+                    <span class="text-sm font-medium text-gray-300">${uploader.username}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button class="icon-btn" onclick="event.stopPropagation(); toggleLike(${photo.id})">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
+                        <span class="text-sm">${likeCount}</span>
+                    </button>
+                    <button class="icon-btn ${isFav ? 'saved' : ''}" onclick="event.stopPropagation(); toggleFavorite(${photo.id})">
+                        <svg class="w-6 h-6" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderPhotoGrid(photoArray, containerId = 'photo-grid') {
+    const grid = document.getElementById(containerId);
+    if (!grid) return;
+    let displayPhotos = [...photoArray];
+    const searchTerm = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
+    if (searchTerm !== '') {
+        displayPhotos = displayPhotos.filter(photo => 
+            photo.title.toLowerCase().includes(searchTerm) || 
+            (photo.profiles && photo.profiles.username.toLowerCase().includes(searchTerm))
+        );
+    }
+    if (displayPhotos.length === 0) {
+        document.getElementById('no-results').classList.remove('hidden');
+    } else {
+        document.getElementById('no-results')?.classList.add('hidden');
+    }
+    grid.innerHTML = displayPhotos.map(generatePhotoCard).join('');
+}
+
+function renderProfileGrid() {
+    if (!user) return;
+    const myPhotos = photos.filter(p => p.user_id === user.id);
+    const grid = document.getElementById('profile-grid');
+    if (myPhotos.length === 0) {
+        grid.innerHTML = '<p class="text-center text-gray-500">Kamu belum mengunggah foto apa pun.</p>';
+    } else {
+        renderPhotoGrid(myPhotos, 'profile-grid');
+    }
+}
+
+// --- FUNGSI FAVORIT (TETAP, DENGAN LOCAL STORAGE) ---
+function toggleFavorite(photoId) {
+    const index = favorites.indexOf(photoId);
+    const photo = photos.find(p => p.id === photoId);
+    if (!photo) return;
+    if (index > -1) {
+        favorites.splice(index, 1);
+        showToast(`"${photo.title}" dihapus dari favorit.`, 'info');
+    } else {
+        favorites.push(photoId);
+        showToast(`"${photo.title}" ditambahkan ke favorit!`, 'success');
+    }
+    localStorage.setItem('bogelstudio_favorites', JSON.stringify(favorites));
+    updateFavoriteButton(photoId);
+    if (document.getElementById('page-favorites').classList.contains('active')) renderFavorites();
+}
+function updateFavoriteButton(photoId) {
+    const btn = document.getElementById('modal-favorite-btn');
+    if (!btn) return;
+    const isFav = favorites.includes(photoId);
+    btn.classList.toggle('saved', isFav);
+    btn.innerHTML = `<svg class="w-6 h-6" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>`;
+}
+function renderFavorites() {
+    const grid = document.getElementById('favorite-grid');
+    if (!grid) return;
+    const favoritePhotos = photos.filter(p => favorites.includes(p.id));
+    if (favoritePhotos.length === 0) {
+        document.getElementById('favorites-empty').classList.remove('hidden');
+        grid.innerHTML = '';
+    } else {
+        document.getElementById('favorites-empty').classList.add('hidden');
+        renderPhotoGrid(favoritePhotos, 'favorite-grid');
+    }
+}
+
+// --- FUNGSI MODAL (DIMODIFIKASI) ---
+function openPhotoModal(photoId) {
+    const modal = document.getElementById('photo-modal-overlay');
+    const photo = photos.find(p => p.id === photoId);
+    if (!photo || !modal) return;
+    
+    document.getElementById('modal-photo-img').src = photo.url;
+    document.getElementById('modal-photo-title').textContent = photo.title;
+    document.getElementById('modal-photo-description').textContent = photo.description || 'Tidak ada deskripsi';
+    
+    const uploader = photo.profiles || { username: 'Unknown', avatar_url: 'https://via.placeholder.com/40' };
+    document.getElementById('modal-uploader-avatar').src = uploader.avatar_url;
+    document.getElementById('modal-photo-uploader').textContent = uploader.username;
+    document.getElementById('modal-photo-date').textContent = new Date(photo.created_at).toLocaleDateString('id-ID');
+    
+    updateLikeButton(photoId, photo);
+    updateFavoriteButton(photoId);
+    
+    modal.classList.add('show-flex');
+    document.body.style.overflow = 'hidden';
+}
+function closePhotoModal() {
+    const modal = document.getElementById('photo-modal-overlay');
+    if (modal) {
+        modal.classList.remove('show-flex');
+        document.body.style.overflow = '';
+    }
+}
+function updateLikeButton(photoId, photo) {
+    const btn = document.getElementById('modal-like-btn');
+    const countSpan = document.getElementById('modal-like-count');
+    if (!btn || !photo) return;
+    
+    const isLiked = user && photo.likes && photo.likes.some(like => like.user_id === user.id);
+    btn.classList.toggle('liked', isLiked);
+    countSpan.textContent = photo.likes_count || 0;
+}
+
+
+// --- FUNGSI UMUM (TETAP) ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 4000);
+}
+function changePage(pageId) {
+    const pages = document.querySelectorAll('.page-content');
+    const navButtons = document.querySelectorAll('.nav-button');
+    pages.forEach(page => { page.classList.add('hidden'); });
+    navButtons.forEach(btn => { btn.classList.remove('active-nav-link'); });
+
+    const pageElement = document.getElementById(`page-${pageId}`);
+    if (pageElement) {
+        pageElement.classList.remove('hidden');
+        const activeBtn = document.querySelector(`.nav-button[data-page="${pageId}"]`);
+        if (activeBtn) activeBtn.classList.add('active-nav-link');
+    }
+
+    if (pageId === 'home') renderPhotoGrid(photos);
+    if (pageId === 'favorites') renderFavorites();
+    if (pageId === 'profile') loadProfile();
+    if (window.innerWidth < 768) closeSidebar();
+}
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+}
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+}
+function handleSearch(term) {
+    renderPhotoGrid(photos);
+}
+
+// --- INISIALISASI ---
+document.addEventListener('DOMContentLoaded', async () => {
+    const config = await getConfig();
     const { createClient } = window.supabase;
     supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
 
-    // 3. Jalankan inisialisasi lainnya
-    const uploadForm = document.getElementById('upload-form');
-    if (uploadForm) {
-        uploadForm.addEventListener('submit', handleUpload);
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    user = session?.user || null;
+    updateUIForAuthStatus();
+
+    document.getElementById('register-form')?.addEventListener('submit', (e) => { e.preventDefault(); signUp(); });
+    document.getElementById('login-form')?.addEventListener('submit', (e) => { e.preventDefault(); signIn(); });
+    document.getElementById('upload-form')?.addEventListener('submit', handleUpload);
+    document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);
     
-    updateAdminUI();
-    updateNotifBadge();
-    
-    // 4. Muat data dari server
     loadPhotosFromServer();
-    
-    // 5. Tampilkan halaman awal
     changePage('home');
 });
-</script>
+    </script>
 </body>
 </html>
